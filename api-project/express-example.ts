@@ -3,7 +3,18 @@ import express, { Request, Response } from 'express';
 const app = express();
 
 app.get('/api/example', (req: Request, res: Response) => {
-    res.send('Express.js server');
+    const html = `
+        <html>
+        <head>
+          <title>Example page</title>
+        </head>
+        <body>
+          <h1>Example heading</h1>
+          <p>This is an example page for the Express.js server</p>
+        </body>
+        </html>
+    `;
+    res.send(html);
 });
 
 app.listen(3000, () => {
