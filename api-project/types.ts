@@ -5,3 +5,5 @@ export interface IComment{
     body: string;
     postId: number;
 }
+
+export type CommentCreatePayload = Omit<IComment, "id">;
