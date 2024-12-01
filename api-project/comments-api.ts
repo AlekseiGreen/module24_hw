@@ -20,7 +20,7 @@ function validateComment(in_:any){
 
 const saveComments = async (data: IComment[]): Promise<void> => {
     await writeFile("mock-comments.json", JSON.stringify(data));
-} 
+}
 
 const PATH = '/api/comments';
 
@@ -42,6 +42,7 @@ app.post(PATH, async(req:Request<{}, {}, CommentCreatePayload>, res:Response)=>{
 
     const id = uuidv4();
     console.log('id=', id);
+    console.log('typeof=', typeof(id));
 
     const comments = await loadComments();
     comments.push({ ...req.body, id });
