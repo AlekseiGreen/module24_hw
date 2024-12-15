@@ -6,6 +6,7 @@ export async function initDataBase(): Promise<Connection|null>{
         connection = await mysql.createConnection({
             host: "localhost",
             port: 3306,
+            password: 'editor369',
             user: "editor",
             database: "ProductApplication",
         });
