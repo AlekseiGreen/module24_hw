@@ -1,11 +1,24 @@
-import { initDataBase } from "./db";
+import { Express } from "express";
+import { Connection } from "mysql2/promise";
+import { initDataBase } from "./src/services/db";
+import { initServer } from "./src/services/server"
+import { commentsRouter } from "./src/api/comments-api";
 
 
-async function runServer() {
-    const connection = await initDataBase();
-    const [rows] = await connection.execute<[any]>("SELECT * FROM products");
-    console.log(rows.length);
-    console.log(rows[0]);
+export let server: Express;
+export let connection: Connection;
+
+const ROOT_PATH = "/api";
+
+async function launchApplication() {
+    server = initServer();
+    connection = await initDataBase();
+    
+    initRouter();
 }
 
-runServer();
+function initRouter() {
+    server.use(`${ROOT_PATH}/comments`, commentsRouter);
+}
+
+launchApplication();
