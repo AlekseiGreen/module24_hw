@@ -1,1 +1,0 @@
-SELECT * FROM productsapplication.comments;
