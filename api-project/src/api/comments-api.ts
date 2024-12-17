@@ -1,8 +1,9 @@
 import { Request, Response, Router } from 'express';
-import { CommentCreatePayload, IComment } from "../../types";
+import { CommentCreatePayload, IComment, ICommentEntity } from "../../types";
 import { readFile, writeFile } from "fs/promises";
 import { checkCommentUniq, validateComment } from "../helpers";
 import { v4 as uuidv4 } from 'uuid';
+import { connection } from "../../index";
 
 
 const loadComments = async(): Promise<IComment[]> => {
@@ -16,23 +17,13 @@ const saveComments = async (data: IComment[]): Promise<void> => {
 
 export const commentsRouter = Router();
 
-commentsRouter.get('/', async( req:Request <{ id:string }>, res:Response ) => {
-  console.log("GETgetGET");
-
-  const comments = await loadComments();
-  const id = req.params.id;
-
-  const targetComment = comments.find(comment => id === comment.id.toString());
-  console.log("Комментc=", comments);
-
-  if (!targetComment) {
-    res.status(404);
-    res.send(`Comment with id ${id} is not found`);
-    return;
-  }
+commentsRouter.get('/', async( req:Request, res:Response ) => {
+  const [comments] = await connection.query<ICommentEntity[]>(
+    "SELECT * FROM comments"
+  );
 
   res.setHeader('Content-Type', 'application/json');
-  res.send(targetComment);
+  res.send(comments);
 });
 
 commentsRouter.post('/', async( req:Request < {}, {}, CommentCreatePayload >, res:Response ) => {

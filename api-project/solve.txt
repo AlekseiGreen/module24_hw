@@ -1,7 +1,7 @@
 Hello please follow these you can solve this,
 -> open Admin PowerShell
 type these commands.
-1)Set-ExecutionPolicy RemoteSigned
-2)Set-ExecutionPolicy Unrestricted
-3)Get-ExecutionPolicy
-4)Exit
+1) Set-ExecutionPolicy RemoteSigned
+2) Set-ExecutionPolicy Unrestricted
+3) Get-ExecutionPolicy
+4) Exit
