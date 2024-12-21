@@ -4,6 +4,7 @@ import { readFile, writeFile } from "fs/promises";
 import { checkCommentUniq, validateComment } from "../helpers";
 import { v4 as uuidv4 } from 'uuid';
 import { connection } from "../../index";
+import { mapCommentEntity } from '../services/mapping';
 
 
 const loadComments = async(): Promise<IComment[]> => {
@@ -18,12 +19,19 @@ const saveComments = async (data: IComment[]): Promise<void> => {
 export const commentsRouter = Router();
 
 commentsRouter.get('/', async( req:Request, res:Response ) => {
-  const [comments] = await connection.query<ICommentEntity[]>(
-    "SELECT * FROM comments"
-  );
-
-  res.setHeader('Content-Type', 'application/json');
-  res.send(comments);
+  try {
+    const [comments] = await connection.query<ICommentEntity[]>(
+      "SELECT * FROM comments"
+    );
+    //console.log('Comments=', comments);
+    res.setHeader('Content-Type', 'application/json');
+    res.send(mapCommentEntity(comments));
+  }catch(e) {
+    console.debug(e.message);
+    res.status(500);
+    res.send("Something went wrong");
+  }
+  
 });
 
 commentsRouter.post('/', async( req:Request < {}, {}, CommentCreatePayload >, res:Response ) => {
