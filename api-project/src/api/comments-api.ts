@@ -5,6 +5,7 @@ import { checkCommentUniq, validateComment } from "../helpers";
 import { v4 as uuidv4 } from 'uuid';
 import { connection } from "../../index";
 import { mapCommentEntity } from '../services/mapping';
+import { OkPacket } from "mysql2";
 
 
 const loadComments = async(): Promise<IComment[]> => {
@@ -75,11 +76,25 @@ commentsRouter.post('/', async( req:Request < {}, {}, CommentCreatePayload >, re
     //   return;
     // }
   
-    // const id = uuidv4();
-    // comments.push({ ...req.body, id });
+    const id = uuidv4();
+    const insertQuery = `
+      INSERT INTO comments
+      (comment_id, email, name, body, product_id)
+      VALUES
+      (?,?,?,?,?)
+    `;
   
-    // const saved = await saveComments(comments);
-  
+    const [info] = await connection.query<OkPacket>(insertQuery, [
+      id,
+      email,
+      name,
+      body,
+      productId,
+    ]);
+  console.log(info);
+   
+   res.status(201);
+   res.send(`Comment id:${id} has been added!`); 
     // if (0) { //!saved
     //   res.status(500);
     //   res.send("Server error. Comment has not been created");
