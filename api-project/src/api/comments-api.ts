@@ -35,7 +35,9 @@ commentsRouter.get('/', async( req:Request, res:Response ) => {
   
 });
 
-commentsRouter.post('/', async( req:Request < {}, {}, CommentCreatePayload >, res:Response ) => {
+commentsRouter.post('/', async(
+  req:Request < {}, {}, CommentCreatePayload >,
+  res:Response ) => {
     const validationResult = validateComment(req.body);
 
     if (validationResult) {
@@ -47,63 +49,57 @@ commentsRouter.post('/', async( req:Request < {}, {}, CommentCreatePayload >, re
     //const comments = await loadComments();
     //const isUniq = checkCommentUniq(req.body, comments);
   
-    const { name, email, body, productId } = req.body;
-    const findDuplicateQuery = `
-      SELECT * FROM comments c
-      WHERE LOWER(c.email) = ?
-      AND LOWER(c.name) = ?
-      AND LOWER(c.body) = ?
-      AND c.product_id = ?
-    `;
+    try{
+      const { name, email, body, productId } = req.body;
+      const findDuplicateQuery = `
+        SELECT * FROM comments c
+        WHERE LOWER(c.email) = ?
+        AND LOWER(c.name) = ?
+        AND LOWER(c.body) = ?
+        AND c.product_id = ?
+      `;
+  
+      const [sameResult] = await connection.query<ICommentEntity[]>(
+        findDuplicateQuery,
+        [email.toLowerCase(), name.toLowerCase(), body.toLowerCase(), productId]
+      );
+      console.log('sameResult=', sameResult);
+      console.log('sameResult[0].comment_id=', sameResult[0]?.comment_id);
+  
+      if(sameResult.length) {
+        console.log('in=');
+        res.status(422);
+        res.send("Comment with the same fields already exists");
+        return;
+      }
+    
+      const id = uuidv4();
+      const insertQuery = `
+        INSERT INTO comments
+        (comment_id, email, name, body, product_id)
+        VALUES
+        (?,?,?,?,?)
+      `;
+    
+      const [info] = await connection.query<OkPacket>(insertQuery, [
+        id,
+        email,
+        name,
+        body,
+        productId,
+      ]);
+    console.log(info);
+     
+     res.status(201);
+     res.send(`Comment id:${id} has been added!`); 
+    } catch(e) {
+      console.log('e.message=', e.message);
+      res.status(500);
+      res.send("Server error. Comment has not been created");
+    }  
+}
 
-    const [sameResult] = await connection.query<ICommentEntity[]>(
-      findDuplicateQuery,
-      [email.toLowerCase(), name.toLowerCase(), body.toLowerCase(), productId]
-    );
-    console.log('sameResult=', sameResult);
-    console.log('sameResult[0].comment_id=', sameResult[0]?.comment_id);
-
-    if(sameResult.length) {
-      console.log('in=');
-      res.status(422);
-      res.send("Comment with the same fields already exists");
-      return;
-    }
-  
-    // if (!isUniq) {
-    //   res.status(422);
-    //   res.send("Comment with the same fields already exists");
-    //   return;
-    // }
-  
-    const id = uuidv4();
-    const insertQuery = `
-      INSERT INTO comments
-      (comment_id, email, name, body, product_id)
-      VALUES
-      (?,?,?,?,?)
-    `;
-  
-    const [info] = await connection.query<OkPacket>(insertQuery, [
-      id,
-      email,
-      name,
-      body,
-      productId,
-    ]);
-  console.log(info);
-   
-   res.status(201);
-   res.send(`Comment id:${id} has been added!`); 
-    // if (0) { //!saved
-    //   res.status(500);
-    //   res.send("Server error. Comment has not been created");
-    //   return;
-    // }
-  
-    // res.status(201);
-    // res.send(`Comment id:${id} has been added!`);
-});
+);
 
 commentsRouter.patch('/', async( req:Request < {}, {}, Partial<IComment> >, res:Response ) => {
     const comments = await loadComments();
