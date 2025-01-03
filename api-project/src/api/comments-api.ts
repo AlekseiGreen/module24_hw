@@ -162,27 +162,22 @@ commentsRouter.patch('/', async(
 });
 
 commentsRouter.delete('/:id', async( req:Request < { id:string } >, res:Response ) => {
-    const comments = await loadComments();
-    const id = req.params.id;
-  
-    let removedComment: IComment | null = null;
-  
-    const filteredComments = comments.filter((comment) => {
-      if (id === comment.id.toString()) {
-        removedComment = comment;
-        return false;
-      }
-  
-      return true;
-    });
-  
-    if (removedComment) {
-      await saveComments(filteredComments);
-      res.status(200);
-      res.send(removedComment);
+  try{
+    console.log('req.params.id=', req.params);
+    const [info] = await connection.query<OkPacket>(
+      "DELETE FROM comments WHERE comment_id = ?", [req.params.id]);
+
+    if (info.affectedRows === 0) {
+      res.status(404);
+      res.send(`Comment with id ${req.params.id} is not found`);
       return;
     }
-  
-    res.status(404);
-    res.send(`Comment with id ${id} is not found`);
-  });
+
+    res.status(200);
+    res.end();
+  } catch(e) {
+    console.log(e.message);
+    res.status(500);
+    res.send("Server error. Comment has not been deleted");
+  }
+});
